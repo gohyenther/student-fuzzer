@@ -12,26 +12,40 @@ from bug import get_initial_corpus
 ## You can re-implement the coverage class to change how
 ## the fuzzer tracks new behavior in the SUT
 
-# class MyCoverage(cv.Coverage):
-#
-#     def coverage(self):
-#         <your implementation here>
-#
-#     etc...
+class MyCoverage(cv.Coverage):
+
+    def coverage(self):
+        # <your implementation here>
+        
+        # purpose: to track the execution of control flow edges
+        print("start of execution:")
+        for trace in self.trace():
+            print(trace, "->")
+        print("end")
+        
+        return set(self.trace())
 
 
 ## You can re-implement the runner class to change how
 ## the fuzzer tracks new behavior in the SUT
 
-# class MyRunner(mf.FunctionRunner):
-#
-#     def run_function(self, inp):
-#           <your implementation here>
-#
-#     def coverage(self):
-#           <your implementation here>
-#
-#     etc...
+class MyRunner(mf.FunctionRunner):
+
+    def run_function(self, inp):
+        # <your implementation here>
+        with MyCoverage() as cover:
+            try:
+                result = super().run_function(inp)
+            except Exception as exc:
+                self._coverage = cover.coverage()
+                raise exc
+
+        self._coverage = cover.coverage()
+        return result
+
+    def coverage(self):
+        # <your implementation here>
+        return self._coverage
 
 
 ## You can re-implement the fuzzer class to change your
@@ -62,7 +76,8 @@ from bug import get_initial_corpus
 if __name__ == "__main__":
     seed_inputs = get_initial_corpus()
     fast_schedule = gbf.AFLFastSchedule(5)
-    line_runner = mf.FunctionCoverageRunner(entrypoint)
+    # line_runner = mf.FunctionCoverageRunner(entrypoint)
+    line_runner = MyRunner(entrypoint)
 
     fast_fuzzer = gbf.CountingGreyboxFuzzer(seed_inputs, gbf.Mutator(), fast_schedule)
     fast_fuzzer.runs(line_runner, trials=999999999)
