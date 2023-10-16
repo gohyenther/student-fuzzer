@@ -6,6 +6,7 @@ def entrypoint(s):
     global i
     i += 1
     if i > 100:
+        print("Found the bug!")
         exit(219)
 
 if __name__ == "__main__":
