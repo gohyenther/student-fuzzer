@@ -16,14 +16,8 @@ from bug import get_initial_corpus
 class MyCoverage(cv.Coverage):
 
     def coverage(self):
-        # <your implementation here>
-        
-        # purpose: to track the sequence of executions
-        traces = []
-        for trace in self.trace():
-            traces.append(trace)
-        
-        return traces
+        # line coverage is better than path coverage
+        return set(self.trace())
 
 
 ## You can re-implement the runner class to change how
@@ -118,7 +112,7 @@ class MyMutator(MyMutator):
 class MyMutator(MyMutator):
     def mutate(self, inp: object()) -> object():  # can be str or Seed (see below)
         """Return s with a random mutation applied. Can be overloaded in subclasses."""
-        # perform more than one random mutations
+        # perform between 1 - 100 random mutations
         for _ in range(random.randint(1, 100)):
             mutator = random.choice(self.mutators)
             inp = mutator(inp)
@@ -136,7 +130,6 @@ class MyMutator(MyMutator):
 if __name__ == "__main__":
     seed_inputs = get_initial_corpus()
     fast_schedule = gbf.AFLFastSchedule(5)
-    # line_runner = mf.FunctionCoverageRunner(entrypoint)
     line_runner = MyRunner(entrypoint)
 
     fast_fuzzer = gbf.CountingGreyboxFuzzer(seed_inputs, MyMutator(), fast_schedule)
