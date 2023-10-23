@@ -72,7 +72,8 @@ class MyMutator:
             self.delete_random_character,
             self.insert_random_character,
             self.flip_random_character,
-            self.reverse_str
+            self.reverse_str,
+            self.shuffle_str
         ]
 
 class MyMutator(MyMutator):
@@ -106,6 +107,13 @@ class MyMutator(MyMutator):
 class MyMutator(MyMutator):
     def reverse_str(self, s: str) -> str:
         return s[::-1]
+
+class MyMutator(MyMutator):
+    def shuffle_str(self, s: str) -> str:
+        string_list = list(s)
+        random.shuffle(string_list)
+        shuffled_string = ''.join(string_list)
+        return shuffled_string
 
 class MyMutator(MyMutator):
     def mutate(self, inp: object()) -> object():  # can be str or Seed (see below)
