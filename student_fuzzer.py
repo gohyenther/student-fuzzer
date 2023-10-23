@@ -10,14 +10,20 @@ import random
 from bug import entrypoint
 from bug import get_initial_corpus
 
+
 ## You can re-implement the coverage class to change how
 ## the fuzzer tracks new behavior in the SUT
 
 class MyCoverage(cv.Coverage):
 
     def coverage(self):
-        # line coverage is better than path coverage
-        return set(self.trace())
+        # implement n-gram coverage
+        n = 3
+        ngram_coverage = set()
+        for i in range(len(self.trace()) - n + 1):
+            ngram = tuple(self.trace()[i:i+n])
+            ngram_coverage.add(ngram)
+        return ngram_coverage
 
 
 ## You can re-implement the runner class to change how
@@ -25,98 +31,40 @@ class MyCoverage(cv.Coverage):
 
 class MyRunner(mf.FunctionRunner):
 
-    def run_function(self, inp):
-        # <your implementation here>
-        with MyCoverage() as cover:
+    def run_function(self, inp: str):
+        # use own MyCoverage: n-gram coverage implementation
+        with MyCoverage() as cov:
             try:
                 result = super().run_function(inp)
             except Exception as exc:
-                self._coverage = cover.coverage()
+                self._coverage = cov.coverage()
                 raise exc
 
-        self._coverage = cover.coverage()
+        self._coverage = cov.coverage()
         return result
 
     def coverage(self):
-        # <your implementation here>
         return self._coverage
 
-
-## You can re-implement the fuzzer class to change your
-## fuzzer's overall structure
-
-# class MyFuzzer(gbf.GreyboxFuzzer):
-#
-#     def reset(self):
-#           <your implementation here>
-#
-#     def run(self, runner: gbf.FunctionCoverageRunner):
-#           <your implementation here>
-#   etc...
 
 ## The Mutator and Schedule classes can also be extended or
 ## replaced by you to create your own fuzzer!
 
-class MyMutator:
+class MyMutator(gbf.Mutator):
     """Mutate strings"""
 
     def __init__(self) -> None:
         """Constructor"""
         self.mutators = [
-            self.delete_random_character,
-            self.insert_random_character,
-            self.flip_random_character,
-            self.reverse_str,
-            self.shuffle_str
+            super().delete_random_character,
+            super().insert_random_character,
+            super().flip_random_character
         ]
-
-class MyMutator(MyMutator):
-    def insert_random_character(self, s: str) -> str:
-        """Returns s with a random character inserted"""
-        pos = random.randint(0, len(s))
-        random_character = chr(random.randrange(32, 127))
-        return s[:pos] + random_character + s[pos:]
-
-class MyMutator(MyMutator):
-    def delete_random_character(self, s: str) -> str:
-        """Returns s with a random character deleted"""
-        if s == "":
-            return self.insert_random_character(s)
-
-        pos = random.randint(0, len(s) - 1)
-        return s[:pos] + s[pos + 1:]
-
-class MyMutator(MyMutator):
-    def flip_random_character(self, s: str) -> str:
-        """Returns s with a random bit flipped in a random position"""
-        if s == "":
-            return self.insert_random_character(s)
-
-        pos = random.randint(0, len(s) - 1)
-        c = s[pos]
-        bit = 1 << random.randint(0, 6)
-        new_c = chr(ord(c) ^ bit)
-        return s[:pos] + new_c + s[pos + 1:]
-
-class MyMutator(MyMutator):
-    def reverse_str(self, s: str) -> str:
-        return s[::-1]
-
-class MyMutator(MyMutator):
-    def shuffle_str(self, s: str) -> str:
-        string_list = list(s)
-        random.shuffle(string_list)
-        shuffled_string = ''.join(string_list)
-        return shuffled_string
-
-class MyMutator(MyMutator):
+    
     def mutate(self, inp: object()) -> object():  # can be str or Seed (see below)
         """Return s with a random mutation applied. Can be overloaded in subclasses."""
-        # perform between 1 - 100 random mutations
-        for _ in range(random.randint(1, 100)):
-            mutator = random.choice(self.mutators)
-            inp = mutator(inp)
-        return inp
+        mutator = random.choice(self.mutators)
+        return mutator(inp)
 
     
 # When executed, this program should run your fuzzer for a very 
