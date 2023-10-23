@@ -58,11 +58,44 @@ class MyMutator(gbf.Mutator):
         self.mutators = [
             super().delete_random_character,
             super().insert_random_character,
-            super().flip_random_character
+            super().flip_random_character,
+            self.toggle_case_alphabets,
+            self.swap_random_position
         ]
     
+    def toggle_case_alphabets(self, s: str) -> str:
+        # Toggle the case (lower or upper case) of a random alphabet in the input s
+        if s == "":
+            return self.insert_random_character(s)
+
+        pos = random.randint(0, len(s) - 1)
+        c = s[pos]
+        if ord(c) >= 97 and ord(c) <= 122:
+            new_c = chr(ord(c) - 32)
+        elif ord(c) >= 65 and ord(c) <= 90:
+            new_c = chr(ord(c) + 32)
+        else:
+            return self.flip_random_character(s)
+        return s[:pos] + new_c + s[pos + 1:]
+    
+    def swap_random_position(self, s: str) -> str:
+        # Swap the positions of 2 random characters in the input s
+        if s == "":
+            return self.insert_random_character(s)
+
+        pos1 = random.randint(0, len(s) - 1)
+        c1 = s[pos1]
+        pos2 = random.randint(0, len(s) - 1)
+        c2 = s[pos2]
+        if pos1 > pos2:
+            return s[:pos2] + c1 + s[pos2 + 1:pos1] + c2 + s[pos1 + 1:]
+        elif pos1 < pos2:
+            return s[:pos1] + c2 + s[pos1 + 1:pos2] + c1 + s[pos2 + 1:]
+        else:
+            return self.flip_random_character(s)
+    
     def mutate(self, inp: object()) -> object():  # can be str or Seed (see below)
-        """Return s with a random mutation applied. Can be overloaded in subclasses."""
+        # Return s with a random mutation applied. Can be overloaded in subclasses.
         mutator = random.choice(self.mutators)
         return mutator(inp)
 
