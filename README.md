@@ -22,3 +22,5 @@ python student_fuzzer.py
 
 Several example bugs are included in the `examples` directory.
 To run the fuzzer on an example bug, copy e.g. `examples/0/bug.py` to the base directory of this repository before running the fuzzer with the command above.
+
+My own bug program can be found in the directory examples/my own bug/bug.py
