@@ -113,5 +113,5 @@ if __name__ == "__main__":
     fast_schedule = gbf.AFLFastSchedule(5)
     line_runner = MyRunner(entrypoint)
 
-    fast_fuzzer = gbf.CountingGreyboxFuzzer(seed_inputs, MyMutator(), fast_schedule)
+    fast_fuzzer = gbf.CountingGreyboxFuzzer(seed_inputs, gbf.Mutator(), fast_schedule)
     fast_fuzzer.runs(line_runner, trials=999999999)
